@@ -1,0 +1,116 @@
+using System;
+
+namespace testinmoment {
+    internal class Program {
+        //Made in 2024. I'm not sure if this is the best possible iteration, but I'll just say its the latest one to future-proof.
+        //Comments were made to make code clear to a friend.
+
+        static int winner = 0; //Self Explanatory
+        static int playerTurn = 1; //Player1 = X, Player2 = O
+        static String[,] board = {
+            { " " , " " , " " }, 
+            { " " , " " , " " }, 
+            { " " , " " , " " } 
+        };
+
+        static Boolean isEmpty(int row, int column) {
+            return board[row, column] == " "; //Just returns true if its empty, false if it isnt
+        }
+
+        static void changeTurn() {
+            if (playerTurn == 1) playerTurn = 2; //Self Explanatory
+            else if (playerTurn == 2) playerTurn = 1; //Self Explanatory
+            else if (playerTurn >= 3 || playerTurn <= 0) throw new IndexOutOfRangeException(message:"Somehow there's a third player."); //Just additional safety, if programmer fucks up
+        }
+
+        static int getPlayerOnSpot(int row, int column) {
+            if (isEmpty(row, column)) return 0; 
+            else if (board[row, column] == "X") return 1; //Self Explanatory
+            else if (board[row, column] == "O") return 2; //Self Explanatory
+            else throw new IndexOutOfRangeException(message: "Somehow there's a third player."); //Same thing
+        }
+
+        static void setPlayerOnSpot(int player, int row, int column) {
+            if (player >= 3 || player <= 0) throw new IndexOutOfRangeException(message: "Somehow there's a third player."); //And another
+            else if (player == 1) board[row, column] = "X"; //Self Explanatory
+            else if (player == 2) board[row, column] = "O"; //Self Explanatory
+        }
+
+        static void printBoard() {
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    Console.Write(' ' + board[i, j] + ' ');
+                    if (j < 2) Console.Write('|');
+                }
+                if (i < 2) Console.WriteLine("\n---|---|---");
+                else Console.WriteLine();
+            }
+            //Just prints board, dont read much into it lol
+        }
+
+        static Boolean isFinished() {
+            //Check if someone won
+            for (int i = 0; i < 3; i++) {
+                if (board[i, 0] == board[i, 1] && board[i, 1] == board[i, 2] && board[i, 0] != " ") { //Checks if a row has all the same value (player) and that it isn't empty
+                    winner = getPlayerOnSpot(i, 0); //We get the player on the spot (any of the three spots will work, I just chose 0 cuz its the first)
+                    return true;
+                }
+                for (int j = 0; j < 3; j++) {
+                    if (board[0, j] == board[1, j] && board[1, j] == board[2, j] && board[0, j] != " ") { //Checks if a column has all the same value (player) and that it isn't empty
+                        winner = getPlayerOnSpot(0, j); //We get the player on the spot (any of the three spots will work, I just chose 0 cuz its the first)
+                        return true;
+                    }
+                }
+            }
+
+            //Check for empty spaces (if there is, then game isn't done)
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    if (board[i, j] == " ") return false; 
+                }
+            }
+
+            //If no spaces left, and no winner, then game ends
+            return true;
+        }
+        
+        static void Main(string[] args) {
+            Console.WriteLine("Welcome to TicTacToe! \nInput: \"row, column\" \nExample: \"1, 3\"");
+
+            while (true) {
+                Console.WriteLine("\nPlayer " + playerTurn + ", it is now your turn. Input your position:");
+
+                String[] positions = Console.ReadLine().Split(','); //Get the input, split it up (Ex. "1, 3" becomes an array of "1" and " 3" (space included, we'll fix that later)
+                int row, column;
+
+                try { //Convert input to int
+                    row = Convert.ToInt32(positions[0]) - 1; //We're subtracting 1 so it goes well with arrays
+                    column = Convert.ToInt32(positions[1].Substring(1)) - 1; //Substring removes the space (refer to split)
+                } catch { 
+                    Console.WriteLine("Invalid input, try again!"); //Something goes wrong with input, we make them try again
+                    continue;
+                }
+
+                if (row >= 3 || row < 0 || column >= 3 || column < 0) { //Confirm that user didnt put any number higher or lower than the spaces
+                    Console.WriteLine("Invalid input, try again!");  
+                    continue;
+                }
+
+                if (isEmpty(row, column)) setPlayerOnSpot(playerTurn, row, column); // If the spot is empty, we put the player on that spot
+                else {
+                    Console.WriteLine("Invalid input, try again!"); //If there is already someone there, we make them try again
+                    continue;
+                }
+
+                printBoard(); //Just print board
+
+                if (isFinished()) break; //If the game is finished, the while true loop is broken. 
+                else changeTurn();  //If not, we go to the next turn
+            }
+
+            if (winner == 0) Console.WriteLine("Game has ended and there are no spaces left. Nobody wins."); //If no winner is found, then no one won.
+            else Console.WriteLine("Game has ended. Player " + winner + " wins."); //If there is, then someone did.
+            Console.ReadLine(); //Just so it doesn't skip or whatever
+        }
+    }
+}
